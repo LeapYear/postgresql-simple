@@ -34,6 +34,7 @@ import           Control.Arrow (first)
 import           Data.ByteString (ByteString)
 import           Data.Hashable (Hashable(hashWithSalt))
 import           Data.Monoid (Monoid(..))
+import           Data.Semigroup as Sem
 import           Data.String (IsString(..))
 import           Data.Typeable (Typeable)
 import           Data.ByteString.Builder ( stringUtf8 )
@@ -87,10 +88,12 @@ instance Read Query where
 instance IsString Query where
     fromString = Query . toByteString . stringUtf8
 
+instance Sem.Semigroup Query where
+    Query a <> Query b = Query (B.append a b)
+
 instance Monoid Query where
     mempty = Query B.empty
-    mappend (Query a) (Query b) = Query (B.append a b)
-    {-# INLINE mappend #-}
+    mappend = (<>)
     mconcat xs = Query (B.concat (map fromQuery xs))
 
 -- | A single-value \"collection\".
